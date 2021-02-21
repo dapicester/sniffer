@@ -84,7 +84,7 @@ class Sniffer(object):
         if self.clear:
             scanner.observe(scanner.ALL_EVENTS,
                             self.absorb_args(self.clear_on_run))
-        scanner.observe(scanner.ALL_EVENTS, self.absorb_args(self._run))
+        scanner.observe(scanner.ALL_EVENTS, self._run)
         if self.debug:
             scanner.observe('created',  echo("callback - created  %(file)s"))
             scanner.observe('modified', echo("callback - changed  %(file)s"))
@@ -105,10 +105,10 @@ class Sniffer(object):
         for scanner in self._scanners:
             scanner.stop()
 
-    def _run(self):
+    def _run(self, filename=None):
         """Calls self.run() and wraps for errors."""
         try:
-            if self.run():
+            if self.run(filename):
                 broadcaster.success(self)
             else:
                 broadcaster.failure(self)
@@ -122,14 +122,14 @@ class Sniffer(object):
             raise
         return True
 
-    def run(self):
+    def run(self, filename):
         """
         Runs the unit test framework. Can be overridden to run anything.
         Returns True on passing and False on failure.
         """
         try:
             import nose
-            arguments = [sys.argv[0]] + list(self.test_args)
+            arguments = [sys.argv[0], filename] + list(self.test_args)
             return nose.run(argv=arguments)
         except ImportError:
             print()
@@ -186,15 +186,15 @@ class ScentSniffer(Sniffer):
     def clear_on_run(self):
         super(ScentSniffer, self).clear_on_run(None)
 
-    def run(self):
+    def run(self, filename):
         """
         Runs the CWD's scent file.
         """
         if not self.scent or len(self.scent.runners) == 0:
             print("Did not find 'scent.py', running nose:")
-            return super(ScentSniffer, self).run()
+            return super(ScentSniffer, self).run(filename)
         else:
             print("Using scent:")
-            arguments = [sys.argv[0]] + list(self.test_args)
+            arguments = [sys.argv[0], filename] + list(self.test_args)
             return self.scent.run(arguments)
         return True
