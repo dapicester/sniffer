@@ -1,4 +1,4 @@
-.PHONY: clear upload test_upload
+.PHONY: clear upload test_upload test
 
 clear:
 	find . | grep --regexp '.pyc$$' | xargs rm
@@ -8,3 +8,5 @@ upload:
 	python setup.py sdist bdist_wheel
 	twine upload dist/*
 
+test:
+	python -m unittest
